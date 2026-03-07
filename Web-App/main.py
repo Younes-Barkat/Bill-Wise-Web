@@ -1,11 +1,12 @@
 from flask import Flask, request
+from flask import render_template
 
 app = Flask(__name__)
 app.secret_key = "bill_wise_app"
 
 @app.route('/')
 def index():
-    return "bill wise"
+    return render_template('index.html')
 
 
 

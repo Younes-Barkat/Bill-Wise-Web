@@ -8,6 +8,7 @@ venv/
 1_BillNER/Version_1/archive.zip
 1_BillNER/Version_2/images/
 Bill-Scaner/images/
+bill_app/
 __pycache__/
 .ipynb_checkpoints/
 *.xlsx
