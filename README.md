@@ -1,3 +1,5 @@
+![Bill-Wise Banner](banner.png)
+
 # Bill-Wise V2.0
 
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)
@@ -7,19 +9,36 @@
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
-An AI-powered Named Entity Recognition (NER) system that automatically extracts key information from invoice or bill images using OCR and a custom-trained spaCy model.
+An AI-powered Named Entity Recognition (NER) system that automatically extracts key information from invoice or bill images using OCR and a custom-trained spaCy model — works even from a photo taken with your phone 📱
 
 ---
 
-## Overview
+## 🔍 Overview
 
 Bill-Wise V2.0 processes invoice/bill images and identifies structured fields such as invoice IDs, dates, seller names, client names, IBANs, and totals — turning unstructured scanned documents into structured data.
 
-The pipeline goes from raw invoice images → OCR text extraction → manual BIO labeling → spaCy model training → entity extraction.
+The pipeline goes from raw invoice images → document detection → perspective correction → brightness/contrast enhancement → OCR text extraction → manual BIO labeling → spaCy model training → entity extraction.
+
+> 🌐 **A web version of Bill-Wise is currently in development** — stay tuned!
 
 ---
 
-## Prediction Example
+## 📸 Processing Steps
+
+The system handles real-world photos taken with a phone, not just clean scans. Here is the full processing pipeline on a real invoice photo:
+
+| Step | Description | Preview |
+|------|-------------|---------|
+| 1 | Original photo taken with phone | ![step1](steps/step1.jpeg) |
+| 2 | Binary threshold mask to detect the document | ![step2](steps/step2.jpeg) |
+| 3 | Document contour detected (red border) | ![step3](steps/step3.jpeg) |
+| 4 | Perspective warp — document straightened | ![step4](steps/step4.jpeg) |
+| 5 | Clean cropped document ready for OCR | ![step5](steps/step5.jpeg) |
+| 6 | Final prediction with bounding boxes | ![step6](steps/step6.jpeg) |
+
+---
+
+## 🎯 Prediction Example
 
 The model takes an invoice image, extracts text via OCR, and highlights the named entities directly on the document:
 
@@ -27,7 +46,7 @@ The model takes an invoice image, extracts text via OCR, and highlights the name
 
 ---
 
-## Resources & Tools Used
+## 🛠️ Resources & Tools Used
 
 - **Invoice Dataset** — [High Quality Invoice Images for OCR](https://www.kaggle.com/datasets/osamahosamabdellatif/high-quality-invoice-images-for-ocr) (Kaggle)
 - **Tesseract OCR** — [tesseract-ocr-w64-setup-v4.1.0.20190314.exe](https://digi.bib.uni-mannheim.de/tesseract/) (Uni Mannheim builds)
@@ -35,7 +54,7 @@ The model takes an invoice image, extracts text via OCR, and highlights the name
 
 ---
 
-## Entity Labels Using BIO Labeling
+## 🏷️ Entity Labels Using BIO Labeling
 
 | Label | Description | Example |
 |-------|-------------|---------|
@@ -48,81 +67,151 @@ The model takes an invoice image, extracts text via OCR, and highlights the name
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-1_BillNER/
-├── batch_1/                  # Raw invoice image batch 1
-├── batch_2/                  # Raw invoice image batch 2
-├── batch_3/                  # Raw invoice image batch 3
-├── data/
-│   ├── TrainData.pickle      # Annotated training data (images 001-265)
-│   ├── TestData.pickle       # Annotated testing data (images 266-300)
-│   ├── train.spacy           # spaCy binary training corpus
-│   ├── test.spacy            # spaCy binary test corpus
-│   └── output/               # Intermediate outputs
-├── output/
-│   ├── model-best/           # Best checkpoint during training
-│   └── model-last/           # Final trained spaCy NER model
-├── Selected/                 # 300 selected and renamed invoice images
-├── all_inovices.csv          # OCR-extracted tokens with BIO tags
-├── all_inovices.txt          # Text version of extracted data
-├── organizing.py             # Selects and organizes invoice images
-├── preprocess.py             # Converts pickle annotations to .spacy format
-├── Preparation.ipynb         # BIO annotation and labeling notebook
-├── Preparation2.ipynb        # OCR extraction with Tesseract
-├── Data_Preprocessing.ipynb  # Train/test split and final preprocessing
-├── predictions.ipynb         # Inference and bounding box visualization
-├── base_config.cfg           # spaCy base configuration
-└── config.cfg                # Full spaCy training configuration
-```
-
----
-
-## Pipeline
-
-```
-Invoice Images (JPEG)
-       |
-       v
-[ Preparation2.ipynb ]         -- Import libraries, load images, run Tesseract OCR
-       |                          Clean extracted text, save tokens to CSV
-       v
-  all_inovices.csv  (id, text)
-       |
-       v
-[ Manual BIO Labeling ]        -- Tag each token with B-/I- prefix for each entity
-       |                          Done manually for all 300 invoices (~half a day of work)
-       v
-  all_inovices.csv  (id, text, tag)
-       |
-       v
-[ Preparation.ipynb ]          -- Load spaCy NER model, extract text from images
-       |                          Get named entities, convert dataframe to content,
-       |                          join labels to token dataframes, apply bounding boxes,
-       |                          combine BIO information, tag each word
-       v
-TrainData.pickle / TestData.pickle
-       |
-       v
-[ preprocess.py ]              -- Convert annotations to spaCy DocBin format
-       |
-       v
-train.spacy / test.spacy
-       |
-       v
-[ spacy train ]                -- Train tok2vec + NER pipeline
-       |
-       v
-  output/model-best  /  output/model-last
-       |
-       v
-[ predictions.ipynb ]          -- Load model, run inference, draw bounding boxes
+Bill-Wise-V2.0/
+├── 1_BillNER/
+│   ├── Version_1/                    # First training version (flat scans)
+│   │   ├── data/
+│   │   │   ├── TrainData.pickle      # Training data (images 001-265)
+│   │   │   ├── TestData.pickle       # Testing data (images 266-300)
+│   │   │   ├── train.spacy
+│   │   │   └── test.spacy
+│   │   ├── output/
+│   │   │   ├── model-best/           # Best checkpoint
+│   │   │   └── model-last/           # Final model
+│   │   ├── Data_Preprocessing.ipynb
+│   │   ├── Preparation.ipynb
+│   │   ├── Preparation2.ipynb
+│   │   ├── final_predictions.ipynb
+│   │   ├── predictions.ipynb
+│   │   ├── predictions.py
+│   │   ├── organizing.py
+│   │   ├── preprocess.py
+│   │   ├── base_config.cfg
+│   │   ├── config.cfg
+│   │   └── all_inovices.csv
+│   └── Version_2/                    # Second version (phone photo support)
+│       ├── data/
+│       │   ├── TrainData.pickle
+│       │   ├── TestData.pickle
+│       │   ├── train.spacy
+│       │   └── test.spacy
+│       ├── output/
+│       │   ├── model-best/
+│       │   └── model-last/
+│       ├── Data_Preprocessing.ipynb
+│       ├── final_predictions.ipynb
+│       ├── predictions.ipynb
+│       ├── predictions.py
+│       ├── preprocess.py
+│       ├── base_config.cfg
+│       └── config.cfg
+├── Bill-Scanner/                     # Document scanner module
+│   ├── bill_scanner_1.ipynb          # Document detection & perspective correction
+│   ├── predictions.py
+│   └── output/
+│       ├── model-best/
+│       └── model-last/
+├── steps/                            # Processing step illustrations
+│   ├── step1.jpeg
+│   ├── step2.jpeg
+│   ├── step3.jpeg
+│   ├── step4.jpeg
+│   ├── step5.jpeg
+│   └── step6.jpeg
+├── banner.png
+├── predicted_example.jpeg
+├── TrainingProcess.png
+├── requirements.txt
+├── .gitignore
+└── README.md
 ```
 
 ---
 
-## Getting Started
+## ⚙️ Pipeline
+
+The system is built around two core modules: **`bill_scanner()`** for document extraction from phone photos, and **`get_predictions()`** for NER inference.
+
+```
+📱 Phone Photo of Invoice
+       |
+       v
+┌──────────────────────────────────────────────────────────────────┐
+│  bill_scanner(image)       [ Bill-Scanner/bill_scanner_1.ipynb ] │
+│                                                                   │
+│  1. resize_func()                                                 │
+│     └── Resize to width=590px keeping aspect ratio               │
+│                                                                   │
+│  2. White region detection                                        │
+│     └── Convert BGR → HSV                                        │
+│     └── Mask white pixels: inRange(HSV, [0,0,170], [180,50,255]) │
+│     └── Morphological Close + Open (20x20 kernel) to clean mask  │
+│                                                                   │
+│  3. Document contour detection                                    │
+│     └── findContours → sort by area (largest first)              │
+│     └── convexHull → approxPolyDP (tolerance = 0.02 * perimeter) │
+│     └── Keep first contour with exactly 4 corners                │
+│                                                                   │
+│  4. four_point_transform() — imutils                              │
+│     └── Scale corner points back to original resolution          │
+│     └── Apply perspective warp → flat straightened document      │
+│                                                                   │
+│  5. bright_cont()                                                 │
+│     └── Adjust brightness and/or contrast via cv2.addWeighted    │
+│     └── Improves OCR accuracy on dark or low-contrast photos     │
+└──────────────────────────────────────────────────────────────────┘
+       |
+       v
+  Clean, flat, enhanced invoice image
+       |
+       v
+┌──────────────────────────────────────────────────────────────────┐
+│  get_predictions(image)                    [ predictions.py ]    │
+│                                                                   │
+│  1. pytesseract.image_to_data()                                   │
+│     └── Extract tokens with bounding box coords                  │
+│         (left, top, width, height) into a DataFrame              │
+│                                                                   │
+│  2. cleanText()                                                   │
+│     └── Strip whitespace and punctuation from each token         │
+│     └── Remove empty tokens                                      │
+│                                                                   │
+│  3. spaCy NER inference                                           │
+│     └── Join all clean tokens into one content string            │
+│     └── model_ner(content) → doc.to_json()                       │
+│     └── Extract entity spans (start/end character positions)     │
+│                                                                   │
+│  4. Token-entity alignment                                        │
+│     └── Compute character start/end for each Tesseract token     │
+│     └── Merge NER labels onto the bounding box DataFrame         │
+│                                                                   │
+│  5. group_gen() — consecutive token grouping                      │
+│     └── Group adjacent tokens sharing the same label             │
+│     └── Aggregate bounding boxes:                                │
+│         left=min, right=max, top=min, bottom=max                 │
+│                                                                   │
+│  6. parser() — entity value cleaning per label type              │
+│     └── ID / TOTAL  → digits only (re.sub \D)                    │
+│     └── DATE        → digits and '/' only                        │
+│     └── SN / CN     → letters and ',' only                       │
+│     └── IBAN        → alphanumeric only                          │
+│                                                                   │
+│  7. Draw results on image                                         │
+│     └── cv2.rectangle() — blue bounding box per entity group     │
+│     └── cv2.putText()   — red label text above each box          │
+└──────────────────────────────────────────────────────────────────┘
+       |
+       v
+  img_bb   — annotated image with bounding boxes 🖼️
+  entities — { ID, DATE, SN, CN, IBAN, TOTAL } 📋
+```
+
+---
+
+## 🚀 Getting Started
 
 ### 1. Clone the repository
 
@@ -143,21 +232,17 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Organize invoice images
+### 4. Scan and straighten your invoice (phone photo)
 
-```bash
-python organizing.py
-```
-
-Selects up to 300 invoice images from the batch folders and copies them into `Selected/` with standardized filenames (`001.jpeg`, `002.jpeg`, ...).
+Open and run **`Bill-Scanner/bill_scanner_1.ipynb`** — detects the document using HSV white masking and contour detection, corrects the perspective with `four_point_transform`, then enhances brightness/contrast with `bright_cont()` before passing to the NER model.
 
 ### 5. Run OCR extraction
 
-Open and run **`Preparation2.ipynb`** — this uses Tesseract to extract tokens from each invoice image and saves the results to `all_inovices.csv`.
+Open and run **`Preparation2.ipynb`** — runs Tesseract OCR on the clean image and saves tokens with bounding box coordinates to `all_inovices.csv`.
 
 ### 6. Manual BIO Labeling
 
-Each token in `all_inovices.csv` was labeled manually using the BIO (Beginning / Inside / Outside) tagging scheme for all 300 invoice images. This was the most time-intensive step, taking approximately half a day to complete.
+Each token was labeled manually using the BIO tagging scheme for all 300 invoice images. This was the most time-intensive step, taking approximately half a day to complete.
 
 | Tag | Meaning |
 |-----|---------|
@@ -167,15 +252,13 @@ Each token in `all_inovices.csv` was labeled manually using the BIO (Beginning /
 
 ### 7. Prepare training data
 
-Open and run **`Preparation.ipynb`** and **`Data_Preprocessing.ipynb`** to load the labeled data, join labels to token dataframes, apply bounding box coordinates, combine the BIO information, and generate `TrainData.pickle` (images 1-265) and `TestData.pickle` (images 266-300).
+Open and run **`Preparation.ipynb`** and **`Data_Preprocessing.ipynb`** to generate `TrainData.pickle` (images 1-265) and `TestData.pickle` (images 266-300).
 
 ### 8. Convert to spaCy format
 
 ```bash
 python preprocess.py
 ```
-
-Generates `data/train.spacy` and `data/test.spacy`.
 
 ### 9. Initialize and train the model
 
@@ -187,11 +270,11 @@ python -m spacy train ./config.cfg --output ./output/ --paths.train ./data/train
 
 ### 10. Run predictions
 
-Open **`predictions.ipynb`** to load the trained model, run inference on new invoice images, and visualize the extracted entities with bounding boxes drawn directly on the document.
+Open **`final_predictions.ipynb`** — loads the trained model, calls `bill_scanner()` to flatten the photo, then `get_predictions()` to extract and visualize all entities with bounding boxes.
 
 ---
 
-## Training Results
+## 📊 Training Results
 
 The model was trained on **265 annotated invoice images** and evaluated on **35 held-out images** (images 266-300), using spaCy's `tok2vec` + `ner` pipeline on CPU.
 
@@ -208,7 +291,7 @@ Training converged around 3,000-3,800 steps with `patience = 1600` and `max_step
 
 ---
 
-## Model Architecture
+## 🧠 Model Architecture
 
 - **Framework:** spaCy 3.8
 - **Pipeline:** `tok2vec` -> `ner`
@@ -219,7 +302,17 @@ Training converged around 3,000-3,800 steps with `patience = 1600` and `max_step
 
 ---
 
-## Requirements
+## ⚠️ Known Issues & Limitations
+
+- **White background detection:** When the invoice is photographed against a very bright or white surface, the HSV white mask captures both the paper and the background simultaneously — making the 4-point contour detection fail to isolate the document correctly.
+
+  > 💡 A possible solution being explored is replacing the threshold-based detection with a **YOLO object detection model** trained specifically to locate document boundaries regardless of background color.
+
+- **Contributions welcome!** If you have ideas or solutions for any of the issues above, feel free to open a **pull request** 🙌
+
+---
+
+## 📦 Requirements
 
 Key dependencies (see `requirements.txt` for the full list):
 
@@ -227,12 +320,13 @@ Key dependencies (see `requirements.txt` for the full list):
 - spaCy 3.8
 - pytesseract 0.3.13
 - opencv-python 4.x
+- imutils
 - pandas 3.x
 - numpy 2.x
 - tqdm, natsort
 
 ---
 
-## Author
+## 👤 Author
 
 **Younes Barkat** — [GitHub](https://github.com/Younes-Barkat)
