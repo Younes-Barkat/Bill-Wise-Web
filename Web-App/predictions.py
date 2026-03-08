@@ -4,6 +4,7 @@
 # In[1]:
 
 
+import os
 import numpy as np
 import pandas as pd
 import cv2
@@ -15,10 +16,10 @@ import string
 import warnings
 warnings.filterwarnings('ignore')
 
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-
-
-model_ner = spacy.load('./output/model-best/')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model_ner = spacy.load(os.path.join(BASE_DIR, 'output', 'model-best'))
 
 
 def cleanText(txt):
@@ -49,9 +50,19 @@ class group_gen():
 
 
 def parser(text, label): 
-    if label == 'ID' or label == 'TOTAL':
+    if label == 'ID':
         text = text.lower()
         text = re.sub(r'\D', '', text)
+
+    elif label == 'TOTAL':
+        dec_match = re.search(r'[,](\d{2})$', text.strip())
+        digits_only = re.sub(r'\D', '', text)
+        if dec_match and len(digits_only) > 2:
+            integer_part = digits_only[:-2]
+            decimal_part = digits_only[-2:]
+            text = integer_part + ',' + decimal_part
+        else:
+            text = digits_only
 
     elif label == 'DATE' :
         text = text.lower()
@@ -78,6 +89,8 @@ grp_gen = group_gen()
 
 
 def get_predictions(image): 
+    grp_gen.id = 0
+    grp_gen.text = ''
     tess_data = pytesseract.image_to_data(image)
     tess_list = list(map(lambda x: x.split('\t'), tess_data.split('\n')))
     df = pd.DataFrame(tess_list[1:], columns= tess_list[0])
@@ -163,26 +176,25 @@ def get_predictions(image):
     
     info_array = df_info[['token','label']].values
     entities = dict(ID=[],DATE=[],SN=[],CN=[],IBAN=[],TOTAL=[])
-    prvs = 'O'
     for token, label in info_array:
         bio_tag = label[:1]
         label_tag = label[2:]
-    
+
+        if bio_tag not in ('B', 'I'):
+            continue
+
         text = parser(token, label_tag)
-        if bio_tag in ('B', 'I'):
-            if prvs != label_tag:
-                entities[label_tag].append(text)
-            else:
-                if bio_tag == 'B':
-                    entities[label_tag].append(text)
-    
+
+        if bio_tag == 'B':
+            entities[label_tag].append(text)
+        else:
+            if entities[label_tag]:
+                if label_tag in ('SN', 'CN'):
+                    entities[label_tag][-1] = entities[label_tag][-1] + " " + text
                 else:
-                    if label_tag in ('SN','CN'):
-                        entities[label_tag][-1] = entities[label_tag][-1] + " " + text
-                    else:
-                        entities[label_tag][-1] = entities[label_tag][-1]  + text
-    
-        prvs = label_tag
+                    entities[label_tag][-1] = entities[label_tag][-1] + text
+            else:
+                entities[label_tag].append(text)
     
     return img_bb, entities    
     

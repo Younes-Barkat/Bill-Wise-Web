@@ -1,70 +1,479 @@
 {% extends "index.html" %}
 
 {% block body %}
-<div class="container py-5">
+<style>
+    .about-hero {
+        padding: 5rem 0 4rem;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+        overflow: hidden;
+    }
 
-    <h1>About Bill Wise</h1>
-    <p>
-        Bill Wise is an AI-powered invoice information extraction system that automatically 
-        identifies and extracts key fields from invoice images — whether they are clean scans 
-        or real photos taken with a phone.
-    </p>
-    <p>
-        It combines Tesseract OCR for text extraction with a custom-trained spaCy Named Entity 
-        Recognition (NER) model to locate and label structured fields directly on the document.
-    </p>
+    .about-hero::before {
+        content: '';
+        position: absolute;
+        top: -100px; right: -100px;
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(212,255,71,0.04) 0%, transparent 65%);
+        pointer-events: none;
+    }
 
-    <hr>
+    .hero-label {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.15em;
+        color: var(--accent);
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 
-    <h2>What it extracts</h2>
-    <ul>
-        <li><strong>ID</strong> — Invoice number</li>
-        <li><strong>DATE</strong> — Date of issue</li>
-        <li><strong>SN</strong> — Seller name</li>
-        <li><strong>CN</strong> — Client name</li>
-        <li><strong>IBAN</strong> — Seller bank IBAN</li>
-        <li><strong>TOTAL</strong> — Grand total amount</li>
-    </ul>
+    .hero-label::before {
+        content: '';
+        display: inline-block;
+        width: 20px; height: 1px;
+        background: var(--accent);
+    }
 
-    <hr>
+    .about-title {
+        font-family: var(--font-display);
+        font-size: clamp(3rem, 7vw, 6rem);
+        line-height: 0.92;
+        letter-spacing: 0.02em;
+        color: var(--text);
+        margin-bottom: 2rem;
+    }
 
-    <h2>How it works</h2>
-    <ol>
-        <li>Photo is taken with a phone and passed to the document scanner</li>
-        <li>The scanner detects the document boundary using HSV white masking and contour detection</li>
-        <li>Perspective warp is applied to flatten and straighten the document</li>
-        <li>Brightness and contrast are adjusted to improve OCR quality</li>
-        <li>Tesseract OCR extracts all tokens with their bounding box coordinates</li>
-        <li>The spaCy NER model identifies and labels the key entities</li>
-        <li>Results are drawn on the image with colored bounding boxes</li>
-    </ol>
+    .about-title span { color: var(--accent); }
 
-    <hr>
+    .about-intro {
+        font-size: 1rem;
+        color: var(--muted2);
+        max-width: 540px;
+        line-height: 1.75;
+    }
 
-    <h2>Model Performance</h2>
-    <ul>
-        <li><strong>F1-Score:</strong> ~91%</li>
-        <li><strong>Precision:</strong> ~91%</li>
-        <li><strong>Recall:</strong> ~91%</li>
-        <li>Trained on 265 invoices, evaluated on 35 held-out images</li>
-    </ul>
+    /* Stats row */
+    .stats-row {
+        display: flex;
+        gap: 2rem;
+        margin-top: 3rem;
+        flex-wrap: wrap;
+    }
 
-    <hr>
+    .stat-item {
+        border-left: 2px solid var(--accent);
+        padding-left: 1rem;
+    }
 
-    <h2>Known Limitations</h2>
-    <p>
-        When the invoice is photographed against a bright or white surface, the document 
-        boundary detection can fail since the paper and background have similar color. 
-        A YOLO-based detection model is being explored as a future solution.
-    </p>
+    .stat-num {
+        font-family: var(--font-display);
+        font-size: 2.2rem;
+        color: var(--text);
+        line-height: 1;
+    }
 
-    <hr>
+    .stat-label {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-top: 0.2rem;
+    }
 
-    <h2>Author</h2>
-    <p>
-        Built by <a href="https://github.com/Younes-Barkat" target="_blank">Younes Barkat</a>.
-        Contributions and pull requests are welcome!
-    </p>
+    /* Sections */
+    .about-section {
+        padding: 4rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .about-section:last-child { border-bottom: none; }
+
+    .section-num {
+        font-family: var(--font-display);
+        font-size: 4rem;
+        color: var(--surface2);
+        line-height: 1;
+        margin-bottom: -0.5rem;
+        letter-spacing: 0.02em;
+    }
+
+    .section-head {
+        font-family: var(--font-display);
+        font-size: 1.6rem;
+        letter-spacing: 0.04em;
+        color: var(--text);
+        margin-bottom: 1.5rem;
+    }
+
+    .section-body {
+        font-size: 0.9rem;
+        color: var(--muted2);
+        line-height: 1.75;
+    }
+
+    /* Entity grid */
+    .entity-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+    }
+
+    .entity-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1rem;
+        transition: all 0.2s var(--ease);
+    }
+
+    .entity-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+    }
+
+    .entity-card-key {
+        font-family: var(--font-display);
+        font-size: 1.3rem;
+        color: var(--accent);
+        letter-spacing: 0.05em;
+        margin-bottom: 0.2rem;
+    }
+
+    .entity-card-desc {
+        font-size: 0.75rem;
+        color: var(--muted2);
+    }
+
+    .entity-card-example {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        color: var(--muted);
+        margin-top: 0.4rem;
+    }
+
+    /* Steps */
+    .steps-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        counter-reset: steps;
+    }
+
+    .steps-list li {
+        counter-increment: steps;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.88rem;
+        color: var(--muted2);
+        line-height: 1.6;
+    }
+
+    .steps-list li:last-child { border-bottom: none; }
+
+    .steps-list li::before {
+        content: counter(steps, decimal-leading-zero);
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--accent);
+        background: rgba(212,255,71,0.06);
+        border: 1px solid rgba(212,255,71,0.15);
+        border-radius: 6px;
+        padding: 0.3rem 0.55rem;
+        flex-shrink: 0;
+        margin-top: 1px;
+        line-height: 1.4;
+    }
+
+    /* Warning box */
+    .warning-box {
+        background: rgba(255,71,87,0.05);
+        border: 1px solid rgba(255,71,87,0.15);
+        border-left: 3px solid var(--danger);
+        border-radius: 10px;
+        padding: 1.2rem 1.4rem;
+        font-size: 0.88rem;
+        color: var(--muted2);
+        line-height: 1.7;
+        margin-top: 1.5rem;
+    }
+
+    .warning-box strong { color: var(--danger); }
+
+    /* Architecture grid */
+    .arch-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+        margin-top: 1.5rem;
+    }
+
+    .arch-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+    }
+
+    .arch-key {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 0.2rem;
+    }
+
+    .arch-val {
+        font-size: 0.82rem;
+        color: var(--text);
+    }
+
+    /* Author card */
+    .author-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .author-avatar {
+        width: 56px; height: 56px;
+        background: var(--accent);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-display);
+        font-size: 1.4rem;
+        color: #000;
+        flex-shrink: 0;
+    }
+
+    .author-name {
+        font-family: var(--font-display);
+        font-size: 1.3rem;
+        letter-spacing: 0.04em;
+        color: var(--text);
+    }
+
+    .author-sub {
+        font-size: 0.8rem;
+        color: var(--muted2);
+        margin-top: 0.2rem;
+    }
+
+    .author-links {
+        display: flex;
+        gap: 0.6rem;
+        margin-top: 0.8rem;
+        flex-wrap: wrap;
+    }
+
+    .author-link {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.05em;
+        color: var(--muted2);
+        text-decoration: none;
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        padding: 0.3rem 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        transition: all 0.2s;
+    }
+
+    .author-link:hover {
+        color: var(--accent);
+        border-color: rgba(212,255,71,0.3);
+    }
+</style>
+
+<div class="about-hero">
+    <div class="container">
+        <div class="hero-label">About the project</div>
+        <h1 class="about-title">BILL<br><span>WISE</span></h1>
+        <p class="about-intro">
+            An AI-powered invoice information extraction system that automatically identifies and extracts key fields from invoice images — whether they are clean scans or real photos taken with a phone.
+        </p>
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-num">~91%</div>
+                <div class="stat-label">F1 Score</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">300</div>
+                <div class="stat-label">Invoices labeled</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">6</div>
+                <div class="stat-label">Entity types</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">spaCy</div>
+                <div class="stat-label">NER Framework</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="about-section">
+        <div class="section-num">01</div>
+        <div class="section-head">WHAT IT EXTRACTS</div>
+        <p class="section-body">The model identifies and labels 6 structured entity types from any invoice document.</p>
+        <div class="entity-grid">
+            <div class="entity-card">
+                <div class="entity-card-key">ID</div>
+                <div class="entity-card-desc">Invoice number</div>
+                <div class="entity-card-example">e.g. 51109338</div>
+            </div>
+            <div class="entity-card">
+                <div class="entity-card-key">DATE</div>
+                <div class="entity-card-desc">Date of issue</div>
+                <div class="entity-card-example">e.g. 04/13/2013</div>
+            </div>
+            <div class="entity-card">
+                <div class="entity-card-key">SN</div>
+                <div class="entity-card-desc">Seller name</div>
+                <div class="entity-card-example">e.g. Andrews & Co.</div>
+            </div>
+            <div class="entity-card">
+                <div class="entity-card-key">CN</div>
+                <div class="entity-card-desc">Client name</div>
+                <div class="entity-card-example">e.g. Becker Ltd</div>
+            </div>
+            <div class="entity-card">
+                <div class="entity-card-key">IBAN</div>
+                <div class="entity-card-desc">Seller bank IBAN</div>
+                <div class="entity-card-example">e.g. GB75MCRL...</div>
+            </div>
+            <div class="entity-card">
+                <div class="entity-card-key">TOTAL</div>
+                <div class="entity-card-desc">Grand total amount</div>
+                <div class="entity-card-example">e.g. $6,204.19</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <div class="section-num">02</div>
+        <div class="section-head">HOW IT WORKS</div>
+        <ol class="steps-list">
+            <li>Photo is taken with a phone and uploaded to the app</li>
+            <li>The scanner detects the document boundary using HSV white masking and contour detection</li>
+            <li>The 4 detected corner points are shown — you can drag to adjust them manually</li>
+            <li>Perspective warp is applied to flatten and straighten the document</li>
+            <li>Brightness and contrast are enhanced to improve OCR quality</li>
+            <li>Tesseract OCR extracts all tokens with their bounding box coordinates</li>
+            <li>The spaCy NER model identifies and labels the 6 entity types</li>
+            <li>Results are rendered on the image with colored bounding boxes</li>
+        </ol>
+    </div>
+
+    <div class="about-section">
+        <div class="row g-5">
+            <div class="col-md-6">
+                <div class="section-num">03</div>
+                <div class="section-head">MODEL PERFORMANCE</div>
+                <p class="section-body">Trained on 265 annotated invoice images, evaluated on 35 held-out images using spaCy's tok2vec + NER pipeline on CPU.</p>
+                <div class="arch-grid" style="margin-top:1.5rem">
+                    <div class="arch-item">
+                        <div class="arch-key">F1-Score</div>
+                        <div class="arch-val" style="color:var(--accent);font-family:var(--font-display);font-size:1.2rem">~91%</div>
+                    </div>
+                    <div class="arch-item">
+                        <div class="arch-key">Precision</div>
+                        <div class="arch-val" style="color:var(--accent);font-family:var(--font-display);font-size:1.2rem">~91%</div>
+                    </div>
+                    <div class="arch-item">
+                        <div class="arch-key">Recall</div>
+                        <div class="arch-val" style="color:var(--accent);font-family:var(--font-display);font-size:1.2rem">~91%</div>
+                    </div>
+                    <div class="arch-item">
+                        <div class="arch-key">Best Score</div>
+                        <div class="arch-val" style="color:var(--accent);font-family:var(--font-display);font-size:1.2rem">0.91</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="section-num">04</div>
+                <div class="section-head">ARCHITECTURE</div>
+                <div class="arch-grid">
+                    <div class="arch-item">
+                        <div class="arch-key">Framework</div>
+                        <div class="arch-val">spaCy 3.8</div>
+                    </div>
+                    <div class="arch-item">
+                        <div class="arch-key">Pipeline</div>
+                        <div class="arch-val">tok2vec → ner</div>
+                    </div>
+                    <div class="arch-item">
+                        <div class="arch-key">Encoder</div>
+                        <div class="arch-val">MaxoutWindow (w=96)</div>
+                    </div>
+                    <div class="arch-item">
+                        <div class="arch-key">Optimizer</div>
+                        <div class="arch-val">Adam lr=0.001</div>
+                    </div>
+                    <div class="arch-item">
+                        <div class="arch-key">Steps</div>
+                        <div class="arch-val">~3,000–3,800</div>
+                    </div>
+                    <div class="arch-item">
+                        <div class="arch-key">Platform</div>
+                        <div class="arch-val">CPU · Windows</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <div class="section-num">05</div>
+        <div class="section-head">KNOWN LIMITATIONS</div>
+        <p class="section-body">The system works best when the invoice is photographed against a dark or contrasting background.</p>
+        <div class="warning-box">
+            <strong><i class="bi bi-exclamation-triangle me-2"></i>White background issue —</strong>
+            When the invoice is photographed against a bright or white surface, the HSV white mask captures both the paper and the background, making the 4-point contour detection fail. A YOLO-based object detection model is being explored as a future solution.
+            <br><br>
+            Have a fix or idea? <a href="https://github.com/Younes-Barkat/Bill-Wise-Web" target="_blank" style="color:var(--danger)">Open a pull request</a> on GitHub.
+        </div>
+    </div>
+
+    <div class="about-section">
+        <div class="section-num">06</div>
+        <div class="section-head">AUTHOR</div>
+        <div class="author-card">
+            <div class="author-avatar">YB</div>
+            <div>
+                <div class="author-name">YOUNES BARKAT</div>
+                <div class="author-sub">AI Engineer · Algeria</div>
+                <div class="author-links">
+                    <a class="author-link" href="https://github.com/Younes-Barkat" target="_blank">
+                        <i class="bi bi-github"></i> GitHub
+                    </a>
+                    <a class="author-link" href="https://linktr.ee/Younes_Barkat" target="_blank">
+                        <i class="bi bi-link-45deg"></i> Linktree
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
 {% endblock %}
