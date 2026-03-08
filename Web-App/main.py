@@ -2,6 +2,7 @@ from flask import Flask, request
 from flask import render_template
 import settings
 import utils
+import numpy as np
 
 app = Flask(__name__)
 app.secret_key = "bill_wise_app"
@@ -16,10 +17,37 @@ def index():
         print('image saved in', up_img_path)
         four_points, size = billscan.bill_scanner(up_img_path)
         print(four_points, size)
+        if four_points is None:
+            message = 'UNABLE TO DETECT THE COORDINATES OF THE DOCUMENT'
+            points = [
+                {'x':10, 'y':10},
+                {'x':120, 'y':10},
+                {'x':120, 'y':120},
+                {'x':10, 'y':120},
+            ]
+            return render_template('scanner.html', points=points, fileupload=True, message=message)
+        
+        else:
+            points = utils.array2json(four_points)
+            message = 'LOACATED THE COORDINATES OF THE DOCUMENT '
+            return render_template('scanner.html', points=points, fileupload=True, message=message)
+
         
         return render_template('scanner.html')
     
     return render_template('scanner.html')
+
+@app.route('/transform', methods=['POST'])
+def transform():
+    try:
+        points = request.json['data']
+        array = np.array(points)
+        fixed_img = billscan.calibrate(array)
+        utils.save_up_img(fixed_img, 'fixed_image.jpg')
+        return 'successed'
+    except:
+        return 'failed'
+
 @app.route('/about')
 def about():
     return render_template('about.html')

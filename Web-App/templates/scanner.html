@@ -16,4 +16,24 @@
     </form>
 </div>
 
+
+{% if  fileupload %}
+
+<p>{{message}}</p>
+
+<div class="row">
+    <div class="col">
+        <canvas id="canvas" style="max-width: 100%; height: auto"></canvas>
+    </div>
+    <div class="col">
+        <div id="loader"  align="center" class=""></div>
+    </div>
+</div>
+
+<script>
+    loadPoints({{points | tojson }})
+</script>
+
+{% endif %}
+
 {% endblock  %}

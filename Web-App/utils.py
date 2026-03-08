@@ -17,6 +17,13 @@ def save_up_img(fileObj):
     
     return upload_image_path
 
+def array2json(np_array):
+    points =[]
+    for point in np_array.tolist():
+        points.append({'x':point[0], 'y':point[1]})
+    return points
+    
+
 class BillScan():
     def __init__(self):
         pass

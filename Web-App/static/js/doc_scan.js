@@ -77,7 +77,7 @@ function drawCircles(){
         context.beginPath();
         context.arc(circle.x, circle.y, circle.radius, 0, Math.PI*2);
         context.fillStyle = circle.color;
-        context.strokeStyle = "#76FF03";
+        context.strokeStyle = "#ff0314";
 
         if (circle.isSelected) {
             context.lineWidth = 4;
