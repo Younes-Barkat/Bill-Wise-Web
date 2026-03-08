@@ -104,7 +104,7 @@ Bill-Wise V2.0 contains the full NER model training pipeline: data preprocessing
 │     inRange([0,0,170], [180,50,255])    │
 │  3. Morphological Close + Open          │
 │  4. findContours → convexHull           │
-│     → approxPolyDP (4 corner points)   │
+│     → approxPolyDP (4 corner points)    │
 │  5. four_point_transform() (imutils)    │
 │  6. brightness/contrast enhancement     │
 └─────────────────────────────────────────┘
@@ -115,16 +115,16 @@ Bill-Wise V2.0 contains the full NER model training pipeline: data preprocessing
 ┌─────────────────────────────────────────┐
 │           get_predictions()             │
 │  1. pytesseract.image_to_data()         │
-│     → DataFrame with bounding boxes    │
+│     → DataFrame with bounding boxes     │
 │  2. cleanText() — strip punctuation     │
 │  3. Join tokens → model_ner(content)    │
-│  4. doc.to_json() → merge NER labels   │
-│     onto Tesseract bounding box data   │
-│  5. group_gen() — group consecutive    │
-│     same-label tokens                  │
-│  6. Aggregate bounding boxes per group │
-│  7. parser() — clean by label type     │
-│  8. cv2.rectangle() + cv2.putText()    │
+│  4. doc.to_json() → merge NER labels    │
+│     onto Tesseract bounding box data    │
+│  5. group_gen() — group consecutive     │
+│     same-label tokens                   │
+│  6. Aggregate bounding boxes per group  │
+│  7. parser() — clean by label type      │
+│  8. cv2.rectangle() + cv2.putText()     │
 └─────────────────────────────────────────┘
       │
       ▼
@@ -143,7 +143,7 @@ Bill-Wise V2.0 contains the full NER model training pipeline: data preprocessing
 │   ├── settings.py                     # Path configuration
 │   ├── requirements_web_app.txt
 │   ├── output/
-│   │   ├── model-best/                 # ✅ Best spaCy NER checkpoint (used in production)
+│   │   ├── model-best/                 # Best spaCy NER checkpoint (used in production)
 │   │   └── model-last/                 # Last spaCy NER checkpoint
 │   ├── static/
 │   │   ├── js/doc_scan.js              # Canvas corner-point drag & drop logic
