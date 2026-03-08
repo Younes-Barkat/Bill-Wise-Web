@@ -1,5 +1,70 @@
 {% extends "index.html" %}
 
 {% block body %}
-<p> This is About </p>
-{% endblock  %}
+<div class="container py-5">
+
+    <h1>About Bill Wise</h1>
+    <p>
+        Bill Wise is an AI-powered invoice information extraction system that automatically 
+        identifies and extracts key fields from invoice images — whether they are clean scans 
+        or real photos taken with a phone.
+    </p>
+    <p>
+        It combines Tesseract OCR for text extraction with a custom-trained spaCy Named Entity 
+        Recognition (NER) model to locate and label structured fields directly on the document.
+    </p>
+
+    <hr>
+
+    <h2>What it extracts</h2>
+    <ul>
+        <li><strong>ID</strong> — Invoice number</li>
+        <li><strong>DATE</strong> — Date of issue</li>
+        <li><strong>SN</strong> — Seller name</li>
+        <li><strong>CN</strong> — Client name</li>
+        <li><strong>IBAN</strong> — Seller bank IBAN</li>
+        <li><strong>TOTAL</strong> — Grand total amount</li>
+    </ul>
+
+    <hr>
+
+    <h2>How it works</h2>
+    <ol>
+        <li>Photo is taken with a phone and passed to the document scanner</li>
+        <li>The scanner detects the document boundary using HSV white masking and contour detection</li>
+        <li>Perspective warp is applied to flatten and straighten the document</li>
+        <li>Brightness and contrast are adjusted to improve OCR quality</li>
+        <li>Tesseract OCR extracts all tokens with their bounding box coordinates</li>
+        <li>The spaCy NER model identifies and labels the key entities</li>
+        <li>Results are drawn on the image with colored bounding boxes</li>
+    </ol>
+
+    <hr>
+
+    <h2>Model Performance</h2>
+    <ul>
+        <li><strong>F1-Score:</strong> ~91%</li>
+        <li><strong>Precision:</strong> ~91%</li>
+        <li><strong>Recall:</strong> ~91%</li>
+        <li>Trained on 265 invoices, evaluated on 35 held-out images</li>
+    </ul>
+
+    <hr>
+
+    <h2>Known Limitations</h2>
+    <p>
+        When the invoice is photographed against a bright or white surface, the document 
+        boundary detection can fail since the paper and background have similar color. 
+        A YOLO-based detection model is being explored as a future solution.
+    </p>
+
+    <hr>
+
+    <h2>Author</h2>
+    <p>
+        Built by <a href="https://github.com/Younes-Barkat" target="_blank">Younes Barkat</a>.
+        Contributions and pull requests are welcome!
+    </p>
+
+</div>
+{% endblock %}
