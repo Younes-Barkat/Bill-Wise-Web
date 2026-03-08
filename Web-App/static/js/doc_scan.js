@@ -54,7 +54,7 @@ function loadPoints(points){
     var y = points[i].y;
     console.log(x,y)
     
-    var color = "#FFFF00"
+    var color = "#00ff04"
     var circle = new Circle(x,y,radius,color);
     circles.push(circle);
     processFunction('/static/media/resize_image.jpg')
@@ -153,7 +153,7 @@ function randomFromTo(from, to) {
 
 $(document).ready(function(){
   $("#sendData").click(function(){
-      $("#loader").html('<img src="/static/images/scan.gif">');
+      $("#loader").html('<img src="/static/images/DocumentOCRScan.gif">');
       $.ajax({
         type : 'POST',
         url : "/transform",

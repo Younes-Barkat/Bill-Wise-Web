@@ -93,7 +93,7 @@ class BillScan():
             return None, self.size
         
     
-    def calibrate(self, four_points):
+    def calibrate(self, four_pts):
         
         multiplier = self.image.shape[1] / self.size[0]
         four_pts = four_pts * multiplier

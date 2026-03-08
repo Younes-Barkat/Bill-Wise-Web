@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask import render_template
 import settings
+import cv2
 import utils
 import numpy as np
 
@@ -43,10 +44,16 @@ def transform():
         points = request.json['data']
         array = np.array(points)
         fixed_img = billscan.calibrate(array)
-        utils.save_up_img(fixed_img, 'fixed_image.jpg')
+        filename = 'fixed_img.jpg'
+        fixed_img_path = settings.join_path(settings.MEDIA_DIR, filename)
+        cv2.imwrite(fixed_img_path, fixed_img)
         return 'successed'
     except:
         return 'failed'
+    
+@app.route('/prediction')
+def prediction():
+    return 'success'
 
 @app.route('/about')
 def about():

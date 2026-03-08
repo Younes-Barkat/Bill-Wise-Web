@@ -14,6 +14,11 @@
             <input type="submit" class="btn btn-primary" value="Upload Bill Image">
         </div>
     </form>
+    {% if fileupload %}
+        <div class="row">
+            <button class="btn btn-primary" id="sendData">Extract Text</button>
+        </div>
+    {% endif %}
 </div>
 
 
