@@ -103,7 +103,7 @@ class BillScan():
         
         img_wrap = four_point_transform(self.image, four_pts)
         
-        fixed_image = self.bright_cont(img_wrap, brightness=35, contrast=45)
+        fixed_image = self.bright_cont(img_wrap, brightness=60, contrast=35)
         
         return fixed_image
         

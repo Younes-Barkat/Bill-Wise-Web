@@ -3,6 +3,7 @@ from flask import render_template
 import settings
 import cv2
 import utils
+import predictions as pred
 import numpy as np
 
 app = Flask(__name__)
@@ -53,7 +54,14 @@ def transform():
     
 @app.route('/prediction')
 def prediction():
-    return 'success'
+    wrap_img = settings.join_path(settings.MEDIA_DIR, 'fixed_img.jpg')
+    image = cv2.imread(wrap_img)
+    img_bb, results = pred.get_predictions(image)
+    bb_filename = settings.join_path(settings.MEDIA_DIR, 'BoundingBox.jpg')
+    cv2.imwrite(bb_filename, img_bb)
+    return render_template('predictions.html', results = results)
+
+
 
 @app.route('/about')
 def about():
